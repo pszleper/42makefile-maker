@@ -3,7 +3,7 @@ from pathlib import Path
 
 def is_positive_response(res):
     positive_responses = ["y", "ye", "yes", "yea", "yeah"]
-    if (res in positive_responses):
+    if (res.split() in positive_responses):
         return True
     else:
         return False
@@ -12,18 +12,26 @@ def add_line(makefile_contents, line, beginning="\n\n"):
     makefile_contents += beginning + line
     return makefile_contents
 
-def generate_src_variable(makefile_contents, src_path="."):
+def add_phony_rule(makefile_contents, phony_targets):
+    makefile_contents += "\n\n" + ".PHONY: " + (" ".join(phony_targets))
+    return makefile_contents
+
+def generate_variable(makefile_contents, path=".", name_var="SRC", file_extension="c", blacklist=[], whitelist=[]):
     src_files = []
-    width = len("SRC = ")
+    width = len(f"{name_var} =")
     header_width = 80
     i = 0
 
-    for file in Path(src_path).rglob("*.c"):
-        src_files.append(str(file))
+    for file in Path(path).rglob(f"*.{file_extension}"):
+        if not file in blacklist and len(whitelist) == 0:
+            src_files.append(str(file))
+        elif len(whitelist) > 0 and file in whitelist:
+            src_files.append(str(file))
 
-    makefile_contents += "\n\nSRC ="
+
+    makefile_contents += f"\n\n{name_var} ="
     for filename in src_files:
-        if len(filename + " ") < header_width:
+        if width + len(filename + " ") < header_width:
             makefile_contents += " "
             makefile_contents += filename
             width += len(filename + " ")
@@ -32,9 +40,9 @@ def generate_src_variable(makefile_contents, src_path="."):
             makefile_contents += "\t"
             makefile_contents += filename
             width = len("\t" + filename + " ")
-        if i == len(src_files):
+        if i == len(src_files) - 1:
             makefile_contents += " "
-            makefile_contents += src_files[i]
+            makefile_contents += src_files[i -1]
             makefile_contents += "\n\n"
             break
         i += 1
@@ -47,13 +55,31 @@ def generate_libft_makefile(makefile_contents):
     makefile_contents = add_line(makefile_contents, "FLAGS = -Wall -Wextra -Werror -c")
     makefile_contents = add_line(makefile_contents, "NAME = libft.a")
     makefile_contents = add_line(makefile_contents, "HEADER = libft.h")
-    makefile_contents = generate_src_variable(makefile_contents, ".")
+
+    libft_bonus = ["ft_lstnew.c", "ft_lstadd_front.c", "ft_lstsize.c", "ft_lstlast.c", "ft_lstadd_back.c", "ft_lstdelone.c", "ft_lstclear.c", "ft_lstiter.c", "ft_lstmap.c"]
+    makefile_contents = generate_variable(makefile_contents, ".", name_var="SRC", blacklist=libft_bonus)
+
+    bonuses_present = input("Did you do the bonus? (yes/no)").strip()
+    if is_positive_response(bonuses_present):
+        bonuses_present = True
+        makefile_contents = generate_variable(makefile_contents, ".", name_var="BONUS", whitelist=libft_bonus)
+        makefile_contents = add_line(makefile_contents, "BONUS_OBJECTS = (BONUS:.c=.o)")
+        makefile_contents = add_line(makefile_contents, "bonus: $(BONUS_OBJECTS)\n\t$ar -rs $(NAME) $(BONUS_OBJECTS) $(HEADER)")
+
+
     makefile_contents = add_line(makefile_contents, "OBJECTS = $(SRC:.c=.o)")
     makefile_contents = add_line(makefile_contents, "all: $(NAME)\n\n$(NAME): $(OBJECTS)\n\t$(AR) $(NAME) $(OBJECTS) $(HEADER)")
     makefile_contents = add_line(makefile_contents, "%.o: %.c\n\t $(CC) $(FLAGS) $< -o $@")
     makefile_contents = add_line(makefile_contents, "clean:\n\trm -f *.o")
-    makefile_contents = add_line(makefile_contents, "fclean: clean\n\trm -f libft.a")
+    makefile_contents = add_line(makefile_contents, "fclean: clean\n\trm -f $(NAME)")
     makefile_contents = add_line(makefile_contents, "re: fclean all")
+
+    phony_targets = []
+    if bonuses_present:
+        phony_targets = ["all", "clean", "fclean", "re", "bonus"]
+    else:
+        phony_targets = ["all", "clean", "fclean", "re"]
+    makefile_contents = add_phony_rule(makefile_contents, phony_targets)
 
     return makefile_contents
 
@@ -63,6 +89,6 @@ def save_makefile_prompt_make(makefile_contents):
         makefile.write(makefile_contents)
     print("Makefile done! Thank you for using 42makefile-maker.\n")
     print("If you found any bugs, please post an issue on Github at https://github.com/pszleper/42makefile-maker.")
-    response = input("Do you want to run make now? (yes/no)\n")
+    response = input("Do you want to run make now? (yes/no)\n").strip()
     if is_positive_response(response)or response == "make":
         os.system("make")
