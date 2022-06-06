@@ -3,3 +3,6 @@ __pycache__
 Makefile
 test.c
 test.o
+.vscode
+Libft
+tests
