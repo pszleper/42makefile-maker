@@ -79,7 +79,7 @@ def generate_libft_makefile(makefile_contents):
 
 def save_makefile_prompt_make(makefile_contents):
     print("Generating Makefile...")
-    with open("./Makefile", "w") as makefile:
+    with open("../Makefile", "w") as makefile:
         makefile.write(makefile_contents)
     print(Fore.GREEN + "Makefile done!" + Fore.RESET, end=" ")
     print("Thank you for using 42makefile-maker.")
