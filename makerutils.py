@@ -30,7 +30,7 @@ def generate_variable(makefile_contents, path=".", name_var="SRC", file_extensio
 
     makefile_contents += f"\n\n{name_var} ="
     for filename in src_files:
-        if width + len(filename + " ") < header_width:
+        if width + len(filename + " \\\n") < header_width:
             makefile_contents += " "
             makefile_contents += filename
             width += len(filename + " ")
