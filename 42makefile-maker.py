@@ -39,16 +39,8 @@ makefile_contents = f'''# ******************************************************
 #                                                                              #
 # **************************************************************************** #'''
 
-project_is_libft = False
 project_is_libft = input("Is this project the libft itself? (yes/no)\n").strip()
 executables_names = None
-
-if utils.is_positive_response(project_is_libft):
-    project_is_libft = True
-    executables_names = ["libft.a"]
-else:
-    project_is_libft = False
-    executables_names = None
 
 if  not project_is_libft:
     libft_path = "./libft"

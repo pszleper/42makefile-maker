@@ -3,7 +3,7 @@ from pathlib import Path
 
 def is_positive_response(res):
     positive_responses = ["y", "ye", "yes", "yea", "yeah"]
-    if (res.split() in positive_responses):
+    if (res.strip() in positive_responses):
         return True
     else:
         return False
@@ -20,14 +20,12 @@ def generate_variable(makefile_contents, path=".", name_var="SRC", file_extensio
     src_files = []
     width = len(f"{name_var} =")
     header_width = 80
-    i = 0
-
+    
     for file in Path(path).rglob(f"*.{file_extension}"):
-        if not file in blacklist and len(whitelist) == 0:
+        if not str(file) in blacklist and len(whitelist) == 0:
             src_files.append(str(file))
-        elif len(whitelist) > 0 and file in whitelist:
+        elif len(whitelist) > 0 and str(file) in whitelist:
             src_files.append(str(file))
-
 
     makefile_contents += f"\n\n{name_var} ="
     for filename in src_files:
@@ -40,16 +38,11 @@ def generate_variable(makefile_contents, path=".", name_var="SRC", file_extensio
             makefile_contents += "\t"
             makefile_contents += filename
             width = len("\t" + filename + " ")
-        if i == len(src_files) - 1:
-            makefile_contents += " "
-            makefile_contents += src_files[i -1]
-            makefile_contents += "\n\n"
-            break
-        i += 1
 
     return makefile_contents
 
 def generate_libft_makefile(makefile_contents):
+    bonuses_present = False
     makefile_contents = add_line(makefile_contents, "CC = gcc")
     makefile_contents = add_line(makefile_contents, "AR = ar -rcs")
     makefile_contents = add_line(makefile_contents, "FLAGS = -Wall -Wextra -Werror -c")
@@ -58,17 +51,17 @@ def generate_libft_makefile(makefile_contents):
 
     libft_bonus = ["ft_lstnew.c", "ft_lstadd_front.c", "ft_lstsize.c", "ft_lstlast.c", "ft_lstadd_back.c", "ft_lstdelone.c", "ft_lstclear.c", "ft_lstiter.c", "ft_lstmap.c"]
     makefile_contents = generate_variable(makefile_contents, ".", name_var="SRC", blacklist=libft_bonus)
-
-    bonuses_present = input("Did you do the bonus? (yes/no)").strip()
-    if is_positive_response(bonuses_present):
+    makefile_contents = add_line(makefile_contents, "OBJECTS = $(SRC:.c=.o)")
+    prompt_bonuses = input("Did you do the bonus? (yes/no)\n").strip()
+    if is_positive_response(prompt_bonuses):
         bonuses_present = True
         makefile_contents = generate_variable(makefile_contents, ".", name_var="BONUS", whitelist=libft_bonus)
-        makefile_contents = add_line(makefile_contents, "BONUS_OBJECTS = (BONUS:.c=.o)")
-        makefile_contents = add_line(makefile_contents, "bonus: $(BONUS_OBJECTS)\n\t$ar -rs $(NAME) $(BONUS_OBJECTS) $(HEADER)")
-
-
-    makefile_contents = add_line(makefile_contents, "OBJECTS = $(SRC:.c=.o)")
+        makefile_contents = add_line(makefile_contents, "BONUS_OBJECTS = $(BONUS:.c=.o)")
     makefile_contents = add_line(makefile_contents, "all: $(NAME)\n\n$(NAME): $(OBJECTS)\n\t$(AR) $(NAME) $(OBJECTS) $(HEADER)")
+
+    if bonuses_present:
+        makefile_contents = add_line(makefile_contents, "bonus: $(NAME) $(BONUS_OBJECTS)\n\tar -rs $(NAME) $(BONUS_OBJECTS) $(HEADER)")
+
     makefile_contents = add_line(makefile_contents, "%.o: %.c\n\t $(CC) $(FLAGS) $< -o $@")
     makefile_contents = add_line(makefile_contents, "clean:\n\trm -f *.o")
     makefile_contents = add_line(makefile_contents, "fclean: clean\n\trm -f $(NAME)")
@@ -90,5 +83,5 @@ def save_makefile_prompt_make(makefile_contents):
     print("Makefile done! Thank you for using 42makefile-maker.\n")
     print("If you found any bugs, please post an issue on Github at https://github.com/pszleper/42makefile-maker.")
     response = input("Do you want to run make now? (yes/no)\n").strip()
-    if is_positive_response(response)or response == "make":
+    if is_positive_response(response) or response == "make":
         os.system("make")
