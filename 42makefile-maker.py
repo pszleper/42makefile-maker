@@ -42,7 +42,7 @@ makefile_contents = f'''# ******************************************************
 project_is_libft = input("Is this project the libft itself? (yes/no)\n").strip()
 executables_names = None
 
-if  not project_is_libft:
+if not project_is_libft:
     libft_path = "./libft"
     libft_present = input("Have you included your libft in your project? (yes/no)\n").strip()
     if utils.is_positive_response(libft_present):

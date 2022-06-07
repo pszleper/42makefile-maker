@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from colorama import Fore
 
 def is_positive_response(res):
     positive_responses = ["y", "ye", "yes", "yea", "yeah"]
@@ -80,8 +81,10 @@ def save_makefile_prompt_make(makefile_contents):
     print("Generating Makefile...")
     with open("./Makefile", "w") as makefile:
         makefile.write(makefile_contents)
-    print("Makefile done! Thank you for using 42makefile-maker.\n")
-    print("If you found any bugs, please post an issue on Github at https://github.com/pszleper/42makefile-maker.")
+    print(Fore.GREEN + "Makefile done!" + Fore.RESET, end=" ")
+    print("Thank you for using 42makefile-maker.")
+    print("If you found any bugs, please post an issue on Github at ", end="")
+    print(Fore.BLUE + "https://github.com/pszleper/42makefile-maker." + Fore.RESET)
     response = input("Do you want to run make now? (yes/no)\n").strip()
     if is_positive_response(response) or response == "make":
         os.system("make")
