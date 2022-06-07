@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from colorama import Fore
+import bonus_lists
 
 def is_positive_response(res):
     positive_responses = ["y", "ye", "yes", "yea", "yeah"]
@@ -50,13 +51,12 @@ def generate_libft_makefile(makefile_contents):
     makefile_contents = add_line(makefile_contents, "NAME = libft.a")
     makefile_contents = add_line(makefile_contents, "HEADER = libft.h")
 
-    libft_bonus = ["ft_lstnew.c", "ft_lstadd_front.c", "ft_lstsize.c", "ft_lstlast.c", "ft_lstadd_back.c", "ft_lstdelone.c", "ft_lstclear.c", "ft_lstiter.c", "ft_lstmap.c"]
-    makefile_contents = generate_variable(makefile_contents, ".", name_var="SRC", blacklist=libft_bonus)
+    makefile_contents = generate_variable(makefile_contents, ".", name_var="SRC", blacklist=bonus_lists.libft_bonus)
     makefile_contents = add_line(makefile_contents, "OBJECTS = $(SRC:.c=.o)")
     prompt_bonuses = input("Did you do the bonus? (yes/no)\n").strip()
     if is_positive_response(prompt_bonuses):
         bonuses_present = True
-        makefile_contents = generate_variable(makefile_contents, ".", name_var="BONUS", whitelist=libft_bonus)
+        makefile_contents = generate_variable(makefile_contents, ".", name_var="BONUS", whitelist=bonus_lists.libft_bonus)
         makefile_contents = add_line(makefile_contents, "BONUS_OBJECTS = $(BONUS:.c=.o)")
     makefile_contents = add_line(makefile_contents, "all: $(NAME)\n\n$(NAME): $(OBJECTS)\n\t$(AR) $(NAME) $(OBJECTS) $(HEADER)")
 
@@ -88,3 +88,7 @@ def save_makefile_prompt_make(makefile_contents):
     response = input("Do you want to run make now? (yes/no)\n").strip()
     if is_positive_response(response) or response == "make":
         os.system("make")
+
+
+if __name__ == "__main__":
+    print("You must execute the 42makefile-maker.py file, like so:\npython3 42makefile-maker.py")
