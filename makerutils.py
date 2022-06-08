@@ -1,7 +1,6 @@
 import os
 from pathlib import Path
 from colorama import Fore
-import bonus_lists
 
 def is_positive_response(res):
     positive_responses = ["y", "ye", "yes", "yea", "yeah"]
@@ -45,18 +44,19 @@ def generate_variable(makefile_contents, path=".", name_var="SRC", file_extensio
 
 def generate_libft_makefile(makefile_contents):
     bonuses_present = False
+    libft_bonus = ["ft_lstnew.c", "ft_lstadd_front.c", "ft_lstsize.c", "ft_lstlast.c", "ft_lstadd_back.c", "ft_lstdelone.c", "ft_lstclear.c", "ft_lstiter.c", "ft_lstmap.c"]
     makefile_contents = add_line(makefile_contents, "CC = gcc")
     makefile_contents = add_line(makefile_contents, "AR = ar -rcs")
     makefile_contents = add_line(makefile_contents, "FLAGS = -Wall -Wextra -Werror -c")
     makefile_contents = add_line(makefile_contents, "NAME = libft.a")
     makefile_contents = add_line(makefile_contents, "HEADER = libft.h")
 
-    makefile_contents = generate_variable(makefile_contents, ".", name_var="SRC", blacklist=bonus_lists.libft_bonus)
+    makefile_contents = generate_variable(makefile_contents, ".", name_var="SRC", blacklist=libft_bonus)
     makefile_contents = add_line(makefile_contents, "OBJECTS = $(SRC:.c=.o)")
     prompt_bonuses = input("Did you do the bonus? (yes/no)\n").strip()
     if is_positive_response(prompt_bonuses):
         bonuses_present = True
-        makefile_contents = generate_variable(makefile_contents, ".", name_var="BONUS", whitelist=bonus_lists.libft_bonus)
+        makefile_contents = generate_variable(makefile_contents, ".", name_var="BONUS", whitelist=libft_bonus)
         makefile_contents = add_line(makefile_contents, "BONUS_OBJECTS = $(BONUS:.c=.o)")
     makefile_contents = add_line(makefile_contents, "all: $(NAME)\n\n$(NAME): $(OBJECTS)\n\t$(AR) $(NAME) $(OBJECTS) $(HEADER)")
 
