@@ -97,10 +97,12 @@ def extension_in_executables(extension, executable_names):
             return True
     return False
 
-def generate_all_rule(makefile_contents, executable_names):
+def generate_all_rule(makefile_contents, executable_names, libft_present):
     makefile_contents += "\n\nall:"
-    for executable in executable_names:
-        makefile_contents += f" {executable}"
+    if libft_present:
+        makefile_contents += " libft.a"
+    for i in range(len(executable_names)):
+        makefile_contents += f" $(NAME{i})"
     return makefile_contents
 
 def generate_libft_rule(makefile_contents, libft_path):
@@ -129,12 +131,10 @@ def generate_makefile(makefile_contents, executable_names, libft_present, libft_
         makefile_contents = add_line(makefile_contents, f"OBJECTS_{remove_extension(executable.upper())} = $(SRC_{remove_extension(executable.upper())}:.c=.o)")
 
     if libft_present:
-        executable_names.insert(0, "libft.a")
-        makefile_contents = generate_all_rule(makefile_contents, executable_names)
-        executable_names.pop(0)
+        makefile_contents = generate_all_rule(makefile_contents, executable_names, libft_present)
         makefile_contents = generate_libft_rule(makefile_contents, libft_path)
     else:
-        makefile_contents = generate_all_rule(makefile_contents, executable_names)
+        makefile_contents = generate_all_rule(makefile_contents, executable_names,libft_present)
 
 
     for i in range(len(executable_names)):
