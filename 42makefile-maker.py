@@ -40,34 +40,35 @@ makefile_contents = f'''# ******************************************************
 # **************************************************************************** #'''
 
 project_is_libft = input("Is this project the libft itself? (yes/no)\n").strip()
-executables_names = None
-
-libft_path = "../libft"
-libft_present = False
-if not utils.is_positive_response(project_is_libft):
-    libft_present = input("Have you included your libft in your project? (yes/no)\n").strip()
-    if utils.is_positive_response(libft_present):
-        libft_present = True
-        while True:
-            libft_path = input("Input the name of the libft folder (leave empty for \"libft\"). If you haven't included your libft, type nolibft\n").strip()
-            if os.path.exists(libft_path) or libft_path == "nolibft":
-                if libft_path == "nolibft":
-                    libft_present = False
-                    libft_path = None
-                else:
-                    libft_present = True
-                break
-            else:
-                if not os.path.exists(libft_path):
-                    print("You've input an invalid path to your libft folder. Try again, or type nolibft to signal you haven't included your libft")
-    else:
-        libft_present = False
-        print("Understood, no libft, let's carry on...\n")
-else:
+if utils.is_positive_response(project_is_libft):
     print("Understood, you're working on the libft. We will generate the appropriate makefile")
     makefile_contents = utils.generate_libft_makefile(makefile_contents)
     utils.save_makefile_prompt_make(makefile_contents)
     quit()
+
+
+executables_names = None
+libft_path = "../libft"
+libft_present = False
+
+libft_present = input("Have you included your libft in your project? (yes/no)\n").strip()
+if utils.is_positive_response(libft_present):
+    libft_present = True
+    while True:
+        libft_path = input("Input the name of the libft folder (leave empty for \"libft\"). If you haven't included your libft, type nolibft\n").strip()
+        if os.path.exists(libft_path) or libft_path == "nolibft":
+            if libft_path == "nolibft":
+                libft_present = False
+                libft_path = None
+            else:
+                libft_present = True
+            break
+        else:
+            if not os.path.exists(libft_path):
+                print("You've input an invalid path to your libft folder. Try again, or type nolibft to signal you haven't included your libft")
+else:
+    libft_present = False
+    print("Understood, no libft, let's carry on...\n")
 
 
 executables_names = None
