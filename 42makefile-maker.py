@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 import re
+from colorama import Fore
 import makerutils as utils
 
 if os.path.exists("../Makefile"):
@@ -13,7 +14,7 @@ while True:
     if len(login) > 0:
         break
     else:
-        print("You did not enter a valid 42 login")
+        print(Fore.RED + "You did not enter a valid 42 login" + Fore.RESET)
 
 # generate the header and add it to the makefile_contents string
 email = f"{login}@student.42.fr"
@@ -55,35 +56,37 @@ libft_present = input("Have you included your libft in your project? (yes/no)\n"
 if utils.is_positive_response(libft_present):
     libft_present = True
     while True:
-        libft_path = input("Input the name of the libft folder (leave empty for \"libft\"). If you haven't included your libft, type nolibft\n").strip()
+        libft_path = input("Input the name of the libft folder (leave empty for \"libft\"). If you haven't included your libft, type "+ Fore.YELLOW +"nolibft" + Fore.RESET + "\n").strip()
         if os.path.exists(libft_path):
-            print("Found your libft folder!")
+            print(Fore.GREEN + "Found your libft folder!" + Fore.RESET)
             break
         elif libft_path == "nolibft":
             libft_present = False
             libft_path = None
+            print("Understood, no libft, let's move on")
             break
         else:
-            print("You've input an invalid path to your libft folder. Try again, or type nolibft to signal you haven't included your libft")
+            print(Fore.RED + "You've input an invalid path to your libft folder. Try again, or type nolibft to signal you haven't included your libft" + Fore.RESET)
 else:
+    print("Understood, no libft, let's move on")
     libft_present = False
 
 
 executable_names_input = None
-print("Input the name(s) of executables/archives/outfiles you must generate. If there's more than one, separate the names by using a semicolon \";\", colon\":\" or comma \",\"")
+print("\nInput the name(s) of executables/archives/outfiles you must generate. If there's more than one, separate the names by using a semicolon \";\", colon\":\" or comma \",\"")
 print("Example 1: libft.a\nExample 2: client;server")
 while True:
     executable_names_input = input("").strip()
     if len(executable_names_input) > 0:
         break
     else:
-        print("You must input a name or series of names in order to proceed")
+        print(Fore.RED + "You must input a name or series of names in order to proceed" + Fore.RESET)
 
 executable_names = re.split(r",|;|:", executable_names_input)
 print("You've input ", end="")
 for i in range(0, len(executable_names) - 1):
-    print(executable_names[i], end=", ")
-print("and " + executable_names[-1])
+    print(Fore.GREEN + executable_names[i] + Fore.RESET, end=", ")
+print("and " + Fore.GREEN + executable_names[-1] + Fore.RESET)
 print("\n", end="")
 
 makefile_contents = utils.generate_makefile(makefile_contents, executable_names, libft_present, libft_path)
