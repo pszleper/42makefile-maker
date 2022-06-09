@@ -1,5 +1,7 @@
+from audioop import add
 import os
 from pathlib import Path
+from unicodedata import name
 from colorama import Fore
 
 def is_positive_response(res):
@@ -13,7 +15,7 @@ def add_line(makefile_contents, line, beginning="\n\n"):
     makefile_contents += beginning + line
     return makefile_contents
 
-def add_phony_rule(makefile_contents, phony_targets):
+def add_phony_rule(makefile_contents, phony_targets=["all", "clean", "fclean", "re"]):
     makefile_contents += "\n\n" + ".PHONY: " + (" ".join(phony_targets))
     return makefile_contents
 
@@ -43,6 +45,7 @@ def generate_variable(makefile_contents, path=".", name_var="SRC", file_extensio
     return makefile_contents
 
 def generate_libft_makefile(makefile_contents):
+    print("Generating Makefile...")
     bonuses_present = False
     libft_bonus = ["ft_lstnew.c", "ft_lstadd_front.c", "ft_lstsize.c", "ft_lstlast.c", "ft_lstadd_back.c", "ft_lstdelone.c", "ft_lstclear.c", "ft_lstiter.c", "ft_lstmap.c"]
     makefile_contents = add_line(makefile_contents, "CC = gcc")
@@ -77,9 +80,68 @@ def generate_libft_makefile(makefile_contents):
 
     return makefile_contents
 
-def save_makefile_prompt_make(makefile_contents):
+def remove_extension(executable):
+    return executable.split(".")[0]
+
+def generate_name_var(makefile_contents, executable_names=[]):
+    for i in range (len(executable_names)):
+        makefile_contents += f"\n\nNAME{i} = {executable_names[i]}"
+    return makefile_contents
+
+def extension_in_executables(extension, executable_names):
+    for executable in executable_names:
+        if executable.endswith(extension):
+            return True
+    return False
+
+def generate_all_rule(makefile_contents, executable_names):
+    makefile_contents += "\n\nall:"
+    for executable in executable_names:
+        makefile_contents += f" {executable}"
+    return makefile_contents
+
+
+def generate_makefile(makefile_contents, executable_names, libft_present, libft_path):
     print("Generating Makefile...")
-    with open("../Makefile", "w") as makefile:
+    makefile_contents = add_line(makefile_contents, "CC = gcc")
+    if extension_in_executables(".a", executable_names):
+        makefile_contents = add_line(makefile_contents, "AR = ar -rcs")
+    makefile_contents = add_line(makefile_contents, "FLAGS = -Wall -Wextra -Werror -c")
+
+    if libft_present:
+        makefile_contents = add_line(makefile_contents, f"LIBFT = {libft_path}")
+
+    makefile_contents = generate_name_var(makefile_contents, executable_names)
+    makefile_contents = generate_variable(makefile_contents, name_var="HEADER", file_extension="h")
+
+    makefile_contents = add_line(makefile_contents, "#You must clean up the SRC variables, delete this comment, and you're done!")
+    for executable in executable_names:
+        makefile_contents = generate_variable(makefile_contents, ".", name_var=f"SRC_{remove_extension(executable.upper())}")
+
+    for executable in executable_names:
+        makefile_contents = add_line(makefile_contents, f"OBJECTS_{remove_extension(executable.upper())} = $(SRC_{remove_extension(executable.upper())}:.c=.o)")
+
+    makefile_contents = generate_all_rule(makefile_contents, executable_names)
+
+    for i in range(len(executable_names)):
+        if executable_names[i].endswith(".a"):
+            makefile_contents = add_line(makefile_contents, f"$(NAME{i}): $(OBJECTS_{remove_extension(executable_names[i].upper())})\n\t$(AR) $(NAME{i}) $(OBJECTS_{remove_extension(executable_names[i].upper())}) $(HEADER)")
+        else:
+            makefile_contents = add_line(makefile_contents, f"$(NAME{i}): $(OBJECTS_{remove_extension(executable_names[i].upper())})\n\t$(CC) $(OBJECTS_{remove_extension(executable_names[i].upper())}) $(HEADER) -o $(NAME{i})")
+
+    makefile_contents = add_line(makefile_contents, "%.o: %.c\n\t $(CC) $(FLAGS) $< -o $@")
+    makefile_contents = add_line(makefile_contents, "clean:\n\trm -f *.o")
+    makefile_contents = add_line(makefile_contents, "fclean: clean")
+    for i in range(len(executable_names)):
+        makefile_contents += f"\n\trm -f $(NAME{i})"
+    makefile_contents = add_line(makefile_contents, "re: fclean all")
+
+    makefile_contents = add_phony_rule(makefile_contents)
+
+    return makefile_contents
+
+def save_makefile_prompt_make(makefile_contents):
+    with open("./Makefile", "w") as makefile:
         makefile.write(makefile_contents)
     print(Fore.GREEN + "Makefile done!" + Fore.RESET, end=" ")
     print("Thank you for using 42makefile-maker.")
@@ -87,7 +149,10 @@ def save_makefile_prompt_make(makefile_contents):
     print(Fore.BLUE + "https://github.com/pszleper/42makefile-maker." + Fore.RESET)
     response = input("Do you want to run make now? (yes/no)\n").strip()
     if is_positive_response(response) or response == "make":
-        os.system("make")
+        if os.getcwd().endswith("42makefile-maker"):
+            os.system("cd .. && make")
+        else:
+            os.system("make")
 
 
 if __name__ == "__main__":

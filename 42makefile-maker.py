@@ -4,7 +4,7 @@ import re
 from colorama import Fore
 import makerutils as utils
 
-if os.path.exists("../Makefile"):
+if os.path.exists("./Makefile"):
     print("A makefile already exists in the project directory, please move/remove/rename it before running 42makefile-maker again")
     quit()
 
@@ -49,7 +49,7 @@ if utils.is_positive_response(project_is_libft):
 
 
 executables_names = None
-libft_path = "../libft"
+libft_path = "./libft"
 libft_present = False
 
 libft_present = input("Have you included your libft in your project? (yes/no)\n").strip()
