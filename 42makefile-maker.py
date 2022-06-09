@@ -4,7 +4,7 @@ import re
 import makerutils as utils
 
 if os.path.exists("../Makefile"):
-    print("A makefile already exists in the current directory, please move/remove/rename it before running 42makefile-maker again")
+    print("A makefile already exists in the project directory, please move/remove/rename it before running 42makefile-maker again")
     quit()
 
 while True:
@@ -56,23 +56,35 @@ if utils.is_positive_response(libft_present):
     libft_present = True
     while True:
         libft_path = input("Input the name of the libft folder (leave empty for \"libft\"). If you haven't included your libft, type nolibft\n").strip()
-        if os.path.exists(libft_path) or libft_path == "nolibft":
-            if libft_path == "nolibft":
-                libft_present = False
-                libft_path = None
-            else:
-                libft_present = True
+        if os.path.exists(libft_path):
+            print("Found your libft folder!")
+            break
+        elif libft_path == "nolibft":
+            libft_present = False
+            libft_path = None
             break
         else:
-            if not os.path.exists(libft_path):
-                print("You've input an invalid path to your libft folder. Try again, or type nolibft to signal you haven't included your libft")
+            print("You've input an invalid path to your libft folder. Try again, or type nolibft to signal you haven't included your libft")
 else:
     libft_present = False
-    print("Understood, no libft, let's carry on...\n")
 
 
-executables_names = None
-print("Input the name(s) of executables/archives/outfiles you must generate. If there's more than one, separate the names by using a semicolon \";\"")
-names = input("Example 1: libft.a\nExample 2: client;server").strip()
+executable_names_input = None
+print("Input the name(s) of executables/archives/outfiles you must generate. If there's more than one, separate the names by using a semicolon \";\", colon\":\" or comma \",\"")
+print("Example 1: libft.a\nExample 2: client;server")
+while True:
+    executable_names_input = input("").strip()
+    if len(executable_names_input) > 0:
+        break
+    else:
+        print("You must input a name or series of names in order to proceed")
 
+executable_names = re.split(r",|;|:", executable_names_input)
+print("You've input ", end="")
+for i in range(0, len(executable_names) - 1):
+    print(executable_names[i], end=", ")
+print("and " + executable_names[-1])
+print("\n", end="")
+
+makefile_contents = utils.generate_makefile(makefile_contents, executable_names, libft_present, libft_path)
 utils.save_makefile_prompt_make(makefile_contents)
