@@ -1,7 +1,5 @@
-from audioop import add
 import os
 from pathlib import Path
-from unicodedata import name
 from colorama import Fore
 
 def is_positive_response(res):
@@ -36,6 +34,11 @@ def generate_variable(makefile_contents, path=".", name_var="SRC", file_extensio
             makefile_contents += " "
             makefile_contents += filename
             width += len(filename + " ")
+        elif len(filename + " \\\n") >= header_width:
+            makefile_contents += filename + " \\\n"
+            if filename != src_files[-1]:
+                makefile_contents += "\t"
+            width = len("\t")
         else:
             makefile_contents += " \\\n"
             makefile_contents += "\t"
@@ -100,6 +103,12 @@ def generate_all_rule(makefile_contents, executable_names):
         makefile_contents += f" {executable}"
     return makefile_contents
 
+def generate_libft_rule(makefile_contents, libft_path):
+    makefile_contents = add_line(makefile_contents, "libft.a:\n")
+    makefile_contents += f"\tmake -C {libft_path}\n"
+    makefile_contents += f"\tcp {libft_path}/libft.a .\n"
+    makefile_contents += f"\tcp {libft_path}/libft.h ."
+    return makefile_contents
 
 def generate_makefile(makefile_contents, executable_names, libft_present, libft_path):
     print("Generating Makefile...")
@@ -108,32 +117,42 @@ def generate_makefile(makefile_contents, executable_names, libft_present, libft_
         makefile_contents = add_line(makefile_contents, "AR = ar -rcs")
     makefile_contents = add_line(makefile_contents, "FLAGS = -Wall -Wextra -Werror -c")
 
-    if libft_present:
-        makefile_contents = add_line(makefile_contents, f"LIBFT = {libft_path}")
 
     makefile_contents = generate_name_var(makefile_contents, executable_names)
     makefile_contents = generate_variable(makefile_contents, name_var="HEADER", file_extension="h")
 
-    makefile_contents = add_line(makefile_contents, "#You must clean up the SRC variables, delete this comment, and you're done!")
+    makefile_contents = add_line(makefile_contents, "#You must clean up the SRC variables (and maybe the HEADER too), delete this comment, and you're done!")
     for executable in executable_names:
         makefile_contents = generate_variable(makefile_contents, ".", name_var=f"SRC_{remove_extension(executable.upper())}")
 
     for executable in executable_names:
         makefile_contents = add_line(makefile_contents, f"OBJECTS_{remove_extension(executable.upper())} = $(SRC_{remove_extension(executable.upper())}:.c=.o)")
 
-    makefile_contents = generate_all_rule(makefile_contents, executable_names)
+    if libft_present:
+        executable_names.insert(0, "libft.a")
+        makefile_contents = generate_all_rule(makefile_contents, executable_names)
+        executable_names.pop(0)
+        makefile_contents = generate_libft_rule(makefile_contents, libft_path)
+    else:
+        makefile_contents = generate_all_rule(makefile_contents, executable_names)
+
 
     for i in range(len(executable_names)):
+        makefile_contents += f"\n\n$(NAME{i}): "
+        if libft_present:
+            makefile_contents += "libft.a "
         if executable_names[i].endswith(".a"):
-            makefile_contents = add_line(makefile_contents, f"$(NAME{i}): $(OBJECTS_{remove_extension(executable_names[i].upper())})\n\t$(AR) $(NAME{i}) $(OBJECTS_{remove_extension(executable_names[i].upper())}) $(HEADER)")
+            makefile_contents = add_line(makefile_contents, f"$(OBJECTS_{remove_extension(executable_names[i].upper())})\n\t$(AR) $(NAME{i}) $(OBJECTS_{remove_extension(executable_names[i].upper())}) $(HEADER)", beginning="")
         else:
-            makefile_contents = add_line(makefile_contents, f"$(NAME{i}): $(OBJECTS_{remove_extension(executable_names[i].upper())})\n\t$(CC) $(OBJECTS_{remove_extension(executable_names[i].upper())}) $(HEADER) -o $(NAME{i})")
+            makefile_contents = add_line(makefile_contents, f"$(OBJECTS_{remove_extension(executable_names[i].upper())})\n\t$(CC) $(OBJECTS_{remove_extension(executable_names[i].upper())}) $(HEADER) -o $(NAME{i})", beginning="")
 
     makefile_contents = add_line(makefile_contents, "%.o: %.c\n\t $(CC) $(FLAGS) $< -o $@")
     makefile_contents = add_line(makefile_contents, "clean:\n\trm -f *.o")
     makefile_contents = add_line(makefile_contents, "fclean: clean")
     for i in range(len(executable_names)):
         makefile_contents += f"\n\trm -f $(NAME{i})"
+    if libft_present:
+        makefile_contents += f"\n\trm -f libft.a && rm -f libft.h"
     makefile_contents = add_line(makefile_contents, "re: fclean all")
 
     makefile_contents = add_phony_rule(makefile_contents)
