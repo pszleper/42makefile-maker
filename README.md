@@ -2,6 +2,8 @@
 This python script lets you create makefiles for your 42 projects with a simple command interface.  
 Supports libft integration, generating multiple executables, as well as determining automatically whether to use ar or gcc among others.
 
+![Demo](Demo.png)
+
 ## Usage
 Go to your project's directory, then run:
 ```

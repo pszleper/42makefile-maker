@@ -4,7 +4,7 @@ from colorama import Fore
 
 def is_positive_response(res):
     positive_responses = ["y", "ye", "yes", "yea", "yeah"]
-    if (res.strip() in positive_responses):
+    if (res.strip().lower() in positive_responses):
         return True
     else:
         return False
