@@ -86,7 +86,9 @@ executable_names = re.split(r",|;|:", executable_names_input)
 print("You've input ", end="")
 for i in range(0, len(executable_names) - 1):
     print(Fore.GREEN + executable_names[i] + Fore.RESET, end=", ")
-print("and " + Fore.GREEN + executable_names[-1] + Fore.RESET)
+if len(executable_names) > 1:
+    print("and ", end="")
+print(Fore.GREEN + executable_names[-1] + Fore.RESET)
 print("\n", end="")
 
 makefile_contents = utils.generate_makefile(makefile_contents, executable_names, libft_present, libft_path)

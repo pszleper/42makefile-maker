@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from colorama import Fore
+import re
 
 def is_positive_response(res):
     positive_responses = ["y", "ye", "yes", "yea", "yeah"]
@@ -17,16 +18,27 @@ def add_phony_rule(makefile_contents, phony_targets=["all", "clean", "fclean", "
     makefile_contents += "\n\n" + ".PHONY: " + (" ".join(phony_targets))
     return makefile_contents
 
-def generate_variable(makefile_contents, path=".", name_var="SRC", file_extension="c", blacklist=[], whitelist=[]):
+def is_descendant_of_libft(filename, libft_path):
+    matching_path = re.match(f"{libft_path}/", filename)
+    if matching_path:
+        return True
+    return False
+
+def generate_variable(makefile_contents, path=".", name_var="SRC", file_extension="c", blacklist=[], whitelist=[], ignore_parent_folder=""):
     src_files = []
     width = len(f"{name_var} =")
     header_width = 80
-    
     for file in Path(path).rglob(f"*.{file_extension}"):
         if not str(file) in blacklist and len(whitelist) == 0:
-            src_files.append(str(file))
+            if len(ignore_parent_folder) > 0 and not is_descendant_of_libft(str(file), ignore_parent_folder):
+                src_files.append(str(file))
+            elif len(ignore_parent_folder) == 0:
+                src_files.append(str(file))
         elif len(whitelist) > 0 and str(file) in whitelist:
-            src_files.append(str(file))
+            if len(ignore_parent_folder) > 0 and not is_descendant_of_libft(str(file), ignore_parent_folder):
+                src_files.append(str(file))
+            elif  len(ignore_parent_folder) == 0:
+                src_files.append(str(file))
 
     makefile_contents += f"\n\n{name_var} ="
     for filename in src_files:
@@ -125,7 +137,7 @@ def generate_makefile(makefile_contents, executable_names, libft_present, libft_
 
     makefile_contents = add_line(makefile_contents, "#You must clean up the SRC variables (and maybe the HEADER too), delete this comment, and you're done!")
     for executable in executable_names:
-        makefile_contents = generate_variable(makefile_contents, ".", name_var=f"SRC_{remove_extension(executable.upper())}")
+        makefile_contents = generate_variable(makefile_contents, ".", name_var=f"SRC_{remove_extension(executable.upper())}", ignore_parent_folder=libft_path)
 
     for executable in executable_names:
         makefile_contents = add_line(makefile_contents, f"OBJECTS_{remove_extension(executable.upper())} = $(SRC_{remove_extension(executable.upper())}:.c=.o)")
