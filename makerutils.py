@@ -117,11 +117,20 @@ def generate_all_rule(makefile_contents, executable_names, libft_present):
         makefile_contents += f" $(NAME{i})"
     return makefile_contents
 
+def find_libft_headers_and_archive(libft_path):
+    headers_and_archive_list = [f"{libft_path}/libft.a"]
+    for file in Path(libft_path).rglob("*.h"):
+        headers_and_archive_list.append(str(file))
+    return headers_and_archive_list
+
 def generate_libft_rule(makefile_contents, libft_path):
+    headers_and_archive_list = find_libft_headers_and_archive(libft_path)
     makefile_contents = add_line(makefile_contents, "libft.a:\n")
     makefile_contents += f"\tmake -C {libft_path}\n"
-    makefile_contents += f"\tcp {libft_path}/libft.a .\n"
-    makefile_contents += f"\tcp {libft_path}/libft.h ."
+    for filename in headers_and_archive_list:
+        makefile_contents += f"\tcp {filename} ."
+        if not filename == headers_and_archive_list[-1]:
+            makefile_contents += "\n"
     return makefile_contents
 
 def generate_makefile(makefile_contents, executable_names, libft_present, libft_path):
