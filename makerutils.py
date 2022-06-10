@@ -163,9 +163,16 @@ def generate_makefile(makefile_contents, executable_names, libft_present, libft_
         if libft_present:
             makefile_contents += "libft.a "
         if executable_names[i].endswith(".a"):
-            makefile_contents = add_line(makefile_contents, f"$(OBJECTS_{remove_extension(executable_names[i].upper())})\n\t$(AR) $(NAME{i}) $(OBJECTS_{remove_extension(executable_names[i].upper())}) $(HEADER)", beginning="")
+            if libft_present:
+                makefile_contents = add_line(makefile_contents, f"$(OBJECTS_{remove_extension(executable_names[i].upper())})\n\t$(AR) $(NAME{i}) $(OBJECTS_{remove_extension(executable_names[i].upper())}) libft.a $(HEADER)", beginning="")
+            else:
+                makefile_contents = add_line(makefile_contents, f"$(OBJECTS_{remove_extension(executable_names[i].upper())})\n\t$(AR) $(NAME{i}) $(OBJECTS_{remove_extension(executable_names[i].upper())}) $(HEADER)", beginning="")
         else:
-            makefile_contents = add_line(makefile_contents, f"$(OBJECTS_{remove_extension(executable_names[i].upper())})\n\t$(CC) $(OBJECTS_{remove_extension(executable_names[i].upper())}) $(HEADER) -o $(NAME{i})", beginning="")
+            if libft_present:
+                makefile_contents = add_line(makefile_contents, f"$(OBJECTS_{remove_extension(executable_names[i].upper())})\n\t$(CC) $(OBJECTS_{remove_extension(executable_names[i].upper())}) libft.a $(HEADER) -o $(NAME{i})", beginning="")
+            else:
+                makefile_contents = add_line(makefile_contents, f"$(OBJECTS_{remove_extension(executable_names[i].upper())})\n\t$(CC) $(OBJECTS_{remove_extension(executable_names[i].upper())}) $(HEADER) -o $(NAME{i})", beginning="")
+
 
     makefile_contents = add_line(makefile_contents, "%.o: %.c\n\t $(CC) $(FLAGS) $< -o $@")
     makefile_contents = add_line(makefile_contents, "clean:\n\trm -f *.o")
